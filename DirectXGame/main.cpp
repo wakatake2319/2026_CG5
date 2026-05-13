@@ -267,31 +267,3 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 
 	return 0;
 }
-
-// シェーダーコンパイル関数
-// filePath:	シェーダーファイルのパス		例: L"Resources/Shaders/TestVS.hlsl"
-// shaderModel: シェーダーモデル			例: "vs_5_0"
-ID3DBlob* CompileShader(const std::wstring& filePath, const std::string& shaderModel)
-{
-	ID3DBlob* shaderBlob = nullptr;
-	ID3DBlob* errorBlob = nullptr;
-
-	HRESULT hr = D3DCompileFromFile(
-		filePath.c_str(), // シェーダーファイル名
-		nullptr,
-		D3D_COMPILE_STANDARD_FILE_INCLUDE, // インクルード可能にする
-		"main", shaderModel.c_str(),       // エントリーポイント名、シェーダーモデル指定
-		D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION, // デバッグ用のフラグ
-	    0, &shaderBlob, &errorBlob);
-
-	// エラーが発生した場合、止める
-	if (FAILED(hr)) {
-		if (errorBlob) {
-			OutputDebugStringA(reinterpret_cast<char*>(errorBlob->GetBufferPointer()));
-			errorBlob->Release();
-		}
-		assert(false);
-	}
-	// 発生したshaderBlobを返す
-	return shaderBlob;
-}
