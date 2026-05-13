@@ -58,7 +58,7 @@ void Shader::LoadDxc(const std::wstring& filePath, const std::wstring& shaderMod
 		assert(SUCCEEDED(hr));
 	}
 
-	// 1.lslファイルを読む
+	// 1.hlslファイルを読む
 	IDxcBlobEncoding* shaderSource = nullptr;
 	hr = dxcUtils->LoadFile(filePath.c_str(), nullptr, &shaderSource);
 	assert(SUCCEEDED(hr));

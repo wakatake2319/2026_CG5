@@ -75,16 +75,16 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 #pragma region VertexShader
 		// 頂点シェーダの読み込みとコンパイル
 	    Shader vs;
-	    vs.Load(L"Resources/Shaders/TestVS.hlsl", L"vs_5_0");
-	    assert(vs.GetBlob() != nullptr);
+	    vs.LoadDxc(L"Resources/Shaders/TestVS.hlsl", L"vs_6_0");
+	    assert(vs.GetDxcBlob() != nullptr);
 #pragma endregion
 
 	// PixelShaderをCompileする
 #pragma region PixelShader
 		// ピクセルシェーダーの読み込みとコンパイル
 	    Shader ps;
-	    ps.Load(L"Resources/Shaders/TestPS.hlsl", L"ps_5_0");
-	    assert(ps.GetBlob() != nullptr);
+	    ps.LoadDxc(L"Resources/Shaders/TestPS.hlsl", L"ps_6_0");
+	    assert(ps.GetDxcBlob() != nullptr);
 #pragma endregion
 
 	// PSOの作成
@@ -92,8 +92,8 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	    D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPipelineStateDesc{};
 	    graphicsPipelineStateDesc.pRootSignature = rootSignature; // ルートシグネチャ
 	    graphicsPipelineStateDesc.InputLayout = inputLayoutDesc;  // InputLayout
-	    graphicsPipelineStateDesc.VS = {vs.GetBlob()->GetBufferPointer(), vs.GetBlob()->GetBufferSize()}; // 頂点シェーダー
-	    graphicsPipelineStateDesc.PS = {ps.GetBlob()->GetBufferPointer(), ps.GetBlob()->GetBufferSize()}; // ピクセルシェーダー
+	    graphicsPipelineStateDesc.VS = {vs.GetDxcBlob()->GetBufferPointer(), vs.GetDxcBlob()->GetBufferSize()}; // 頂点シェーダー
+	    graphicsPipelineStateDesc.PS = {ps.GetDxcBlob()->GetBufferPointer(), ps.GetDxcBlob()->GetBufferSize()}; // ピクセルシェーダー
 		graphicsPipelineStateDesc.BlendState = blendDesc;        // BlendState
 		graphicsPipelineStateDesc.RasterizerState = rasterizerDesc; // RasterizerState
 		
