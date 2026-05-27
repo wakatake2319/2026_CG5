@@ -2,6 +2,9 @@
 #include <d3dcompiler.h>
 #include <cassert>
 #include "MiscUtility.h"
+#include <dxcapi.h>
+
+#pragma comment(lib, "dxcompiler.lib")
 
 void Shader::Load(const std::wstring& filePath, const std::wstring& shaderModel)
 {
