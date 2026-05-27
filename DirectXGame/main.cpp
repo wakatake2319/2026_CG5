@@ -5,6 +5,7 @@
 #include "Shader.h"
 #include "RootSignature.h"
 #include "PipelineState.h"
+#include "VertexBuffer.h"
 
 using namespace KamataEngine;
 
@@ -88,33 +89,6 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	rs.Create();
 #pragma endregion
 
-	// InputLayoutの作成
-#pragma region InputLayout
-	D3D12_INPUT_ELEMENT_DESC inputElementDescs[1] = {};
-	//inputElementDescs[0].SemanticName = "POSITION"; // 頂点の意味を示す文字列
-	//inputElementDescs[0].SemanticIndex = 0;                       // 同じ意味の頂点が複数ある場合の識別番号
-	//inputElementDescs[0].Format = DXGI_FORMAT_R32G32B32A32_FLOAT; // データの形式
-	//inputElementDescs[0].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT; // 頂点データ内のオフセット
-	//D3D12_INPUT_LAYOUT_DESC inputLayoutDesc{};
-	//inputLayoutDesc.pInputElementDescs = inputElementDescs;    // 頂点の要素の配列
-	//inputLayoutDesc.NumElements = _countof(inputElementDescs); // 頂点の要素数
-#pragma endregion
-
-	// BlendStateの作成
-#pragma region BlendState
-	D3D12_BLEND_DESC blendDesc{};
-	// 全ての色要素を書き込む
-	//blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
-#pragma endregion
-
-	// RasterizerStateの作成
-#pragma region RasterizerState
-	D3D12_RASTERIZER_DESC rasterizerDesc{};
-	// 裏面をカリングする
-	rasterizerDesc.CullMode = D3D12_CULL_MODE_BACK;
-	// 塗りつぶしモードをソリッドにする(ワイヤーフレームなら D3D12_FILL_MODE_WIREFRAME)
-	rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
-#pragma endregion
 
 	// VertetxShaderをCompileする
 #pragma region VertexShader
@@ -124,6 +98,7 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	    assert(vs.GetDxcBlob() != nullptr);
 #pragma endregion
 
+
 	// PixelShaderをCompileする
 #pragma region PixelShader
 		// ピクセルシェーダーの読み込みとコンパイル
@@ -132,88 +107,28 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	    assert(ps.GetDxcBlob() != nullptr);
 #pragma endregion
 
-	// PSOの作成
+
+	// PipelineStateの作成
 #pragma region PSO
-	    //D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPipelineStateDesc{};
-	    //graphicsPipelineStateDesc.pRootSignature = rs.Get(); // ルートシグネチャ
-	    //graphicsPipelineStateDesc.InputLayout = inputLayoutDesc;  // InputLayout
-	    //graphicsPipelineStateDesc.VS = {vs.GetDxcBlob()->GetBufferPointer(), vs.GetDxcBlob()->GetBufferSize()}; // 頂点シェーダー
-	    //graphicsPipelineStateDesc.PS = {ps.GetDxcBlob()->GetBufferPointer(), ps.GetDxcBlob()->GetBufferSize()}; // ピクセルシェーダー
-		//graphicsPipelineStateDesc.BlendState = blendDesc;        // BlendState
-		//graphicsPipelineStateDesc.RasterizerState = rasterizerDesc; // RasterizerState
-		
-		// 書き込むRTVの情報
-		//graphicsPipelineStateDesc.NumRenderTargets = 1;         // 描画対象は1つ
-		//graphicsPipelineStateDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB; // 描画対象のフォーマットを指定
-
-		// 利用するリポジトリ
-		//graphicsPipelineStateDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE; // 描画する図形の形状を三角形にする
-
-		// どのように画面に色を打ち込むかの設定
-	    //graphicsPipelineStateDesc.SampleDesc.Count = 1;                       // マルチサンプリングしない
-		//graphicsPipelineStateDesc.SampleMask = D3D12_DEFAULT_SAMPLE_MASK;        // 全てのサンプルを有効にする
-
-		// PSOの生成
-	    //ID3D12PipelineState* pipelineState = nullptr;
-	    //HRESULT hr = dxCommon->GetDevice()->CreateGraphicsPipelineState(
-			//&graphicsPipelineStateDesc, IID_PPV_ARGS(&pipelineState));
-	    //assert(SUCCEEDED(hr));
 	    PipelineState pipelineState;
 	    SetupPipelineState(pipelineState, rs, vs, ps);
 #pragma endregion
 
-	// VertexResourceの作成
-#pragma region VertexResource
-		// 頂点リソース用のヒープの設定
-	    D3D12_HEAP_PROPERTIES uploadHeapProperties{};
-	    uploadHeapProperties.Type = D3D12_HEAP_TYPE_UPLOAD;		// CPUから書き込むヒープ
 
-		// 頂点リソースの設定
-		D3D12_RESOURCE_DESC vertexResourceDesc{};
-		vertexResourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER; // バッファリソースであることを示す
-		vertexResourceDesc.Width = sizeof(Vector4) * 3; // 頂点1つあたり4要素(位置)×4バイト(32ビット)×3頂点分
-		
-		// バッファの場合はこれらは1にする決まり
-		vertexResourceDesc.Height = 1;          // バッファリソースなので高さは1
-		vertexResourceDesc.DepthOrArraySize = 1; // バッファリソースなので深さは1
-		vertexResourceDesc.MipLevels = 1;       // バッファリソースなのでミップマップレベルは1
-		vertexResourceDesc.SampleDesc.Count = 1; // マルチサンプリングしない
-	    
-		// バッファの場合はこれにする決まり
-		vertexResourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR; // 行優先のメモリ配置
-
-		// 実際にリソースを生成する
-	    ID3D12Resource* vertexResource = nullptr;
-		HRESULT hr = dxCommon->GetDevice()->CreateCommittedResource(
-			&uploadHeapProperties, // アップロードヒープを指定
-			D3D12_HEAP_FLAG_NONE, // ヒープフラグ
-			&vertexResourceDesc,  // リソースの詳細
-			D3D12_RESOURCE_STATE_GENERIC_READ, // リソースの使用状態
-			nullptr,              // 最適化されたクリア値（バッファリソースなのでnullptr）
-			IID_PPV_ARGS(&vertexResource)); // 生成したリソースへのポインタを受け取る
-	    assert(SUCCEEDED(hr));
+	// VertexBuffer(VertexResource, VertexBufferView)の作成
+#pragma region VertexBuffer
+	    VertexBuffer vb;
+	    vb.Create(sizeof(Vector4) * 3, sizeof(Vector4));
 #pragma endregion
 
-	// VertexBufferViewの作成
-#pragma region VertexBufferView
-		D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
-		// リソースの先頭アドレスから使う
-		vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress(); // 頂点リソースのGPU仮想アドレス
-		// 使用するリソースのサイズは3つ分のサイズ
-		vertexBufferView.SizeInBytes = sizeof(Vector4) * 3; // 頂点リソースのサイズ
-	    // 1つの頂点のサイズ
-		vertexBufferView.StrideInBytes = sizeof(Vector4);                         // 頂点1つあたりのサイズ
-#pragma endregion
 
 	// Resourceにデータを書き込む
 #pragma region WriteVertexData
 	    Vector4* vertexData = nullptr;
-	    vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData)); // リソースをCPUから書き込めるようにマップする
+	    vb.Get()->Map(0, nullptr, reinterpret_cast<void**>(&vertexData)); // リソースをCPUから書き込めるようにマップする
 	    vertexData[0] = {-0.5f, -0.5f, 0.0f, 1.0f};                               // 頂点1の位置
 	    vertexData[1] = {0.0f, 0.5f, 0.0f, 1.0f};                               // 頂点2の位置
 		vertexData[2] = {0.5f, -0.5f, 0.0f, 1.0f};                               // 頂点3の位置
-		// 頂点リソースのマップを解除する
-	    vertexResource->Unmap(0, nullptr);
 #pragma endregion
 
 
@@ -244,7 +159,7 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		// コマンドを読む
 		commandList->SetGraphicsRootSignature(rs.Get()); // ルートシグネチャの設定
 		commandList->SetPipelineState(pipelineState.Get());         // PSOの設定
-		commandList->IASetVertexBuffers(0, 1, &vertexBufferView); // 頂点バッファビューの設定
+		commandList->IASetVertexBuffers(0, 1, vb.GetView()); // 頂点バッファビューの設定
 
 		// トポロジの設定
 		commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST); // トポロジの設定（三角形リスト）
@@ -259,11 +174,7 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 
 
 	// 解放処理
-	delete gameScene;
-
-	vertexResource->Release();
-	//pipelineState->Release();
-
+	//delete gameScene;
 
 
 	// エンジンの終了処理
