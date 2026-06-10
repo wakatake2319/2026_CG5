@@ -6,6 +6,7 @@
 #include "RootSignature.h"
 #include "PipelineState.h"
 #include "VertexBuffer.h"
+#include "IndexBuffer.h"
 
 using namespace KamataEngine;
 
@@ -115,21 +116,65 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 #pragma endregion
 
 
+// リソースの確保を含め、頂点情報を柔軟に対応できるようにVerteData構造体を新たに作成する
+#pragma region VerteData構造体
+	// Vertex4 > VertexData に変更して利用する
+	struct VertexData {
+		Vector4 position; // 頂点の位置
+	};
+
+	// 頂点データの準備
+	VertexData vertices[] = {
+		{0.0f,  0.5f,  0.0f, 1.0f}, //  上
+		{0.5f,  -0.5f, 0.0f, 1.0f}, // 右下
+		{-0.5f, -0.5f, 0.0f, 1.0f}, // 左下
+	};
+#pragma endregion
+
+
 	// VertexBuffer(VertexResource, VertexBufferView)の作成
 #pragma region VertexBuffer
-	    VertexBuffer vb;
-	    vb.Create(sizeof(Vector4) * 3, sizeof(Vector4));
+	VertexBuffer vb;
+	vb.Create(sizeof(vertices), sizeof(vertices[0]));
+
+	// 頂点リソースにデータを書き込む
+	VertexData* pGpuVertices = nullptr;
+	vb.Get()->Map(0, nullptr, reinterpret_cast<void**>(&pGpuVertices)); // リソースをCPUから書き込めるようにマップする
+
+	for (int i = 0; i < _countof(vertices); ++i) {
+		pGpuVertices[i] = vertices[i]; // 頂点データをGPUリソースにコピー
+	}
 #pragma endregion
 
-
-	// Resourceにデータを書き込む
-#pragma region WriteVertexData
-	    Vector4* vertexData = nullptr;
-	    vb.Get()->Map(0, nullptr, reinterpret_cast<void**>(&vertexData)); // リソースをCPUから書き込めるようにマップする
-	    vertexData[0] = {-0.5f, -0.5f, 0.0f, 1.0f};                               // 頂点1の位置
-	    vertexData[1] = {0.0f, 0.5f, 0.0f, 1.0f};                               // 頂点2の位置
-		vertexData[2] = {0.5f, -0.5f, 0.0f, 1.0f};                               // 頂点3の位置
+	//頂点インデックスデータの準備
+#pragma region IndexData
+	uint16_t indices[] = {
+	    0, 1, 2 // 頂点0、1、2を結ぶ三角形
+	};
 #pragma endregion
+
+	// IndexBuffer(IndexResource, IndexBufferView)の作成
+#pragma region IndexBuffer
+	IndexBuffer ib;
+	ib.Create(sizeof(indices), sizeof(indices[0]));
+
+	// インデックスリソースにデータを書き込む
+	uint16_t* pGpuIndices = nullptr;
+	ib.Get()->Map(0, nullptr, reinterpret_cast<void**>(&pGpuIndices)); // リソースをCPUから書き込めるようにマップする
+	
+	for (int i = 0; i < _countof(indices); ++i) {
+		pGpuIndices[i] = indices[i]; // インデックスデータをGPUリソースにコピー
+	}
+#pragma endregion
+
+//	// Resourceにデータを書き込む
+//#pragma region WriteVertexData
+//	    Vector4* vertexData = nullptr;
+//	    vb.Get()->Map(0, nullptr, reinterpret_cast<void**>(&vertexData)); // リソースをCPUから書き込めるようにマップする
+//	    vertexData[0] = {-0.5f, -0.5f, 0.0f, 1.0f};                               // 頂点1の位置
+//	    vertexData[1] = {0.0f, 0.5f, 0.0f, 1.0f};                               // 頂点2の位置
+//		vertexData[2] = {0.5f, -0.5f, 0.0f, 1.0f};                               // 頂点3の位置
+//#pragma endregion
 
 
 	// ゲームシーンのインスタンス生成
@@ -160,12 +205,12 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		commandList->SetGraphicsRootSignature(rs.Get()); // ルートシグネチャの設定
 		commandList->SetPipelineState(pipelineState.Get());         // PSOの設定
 		commandList->IASetVertexBuffers(0, 1, vb.GetView()); // 頂点バッファビューの設定
-
+		commandList->IASetIndexBuffer(ib.GetView()); // インデックスバッファビューの設定
 		// トポロジの設定
 		commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST); // トポロジの設定（三角形リスト）
 		// 頂点数、インデックス数、インデックスの開放位置、インデックスのオフセット
-		commandList->DrawInstanced(3, 1, 0, 0); // DrawInstanced(頂点数, インスタンス数, 開始頂点位置, 開始インスタンス位置)
-
+		//commandList->DrawInstanced(3, 1, 0, 0); // DrawInstanced(頂点数, インスタンス数, 開始頂点位置, 開始インスタンス位置)
+		commandList->DrawIndexedInstanced(_countof(indices), 1, 0, 0, 0); // DrawIndexedInstanced(インデックス数, インスタンス数, 開始インデックス位置, 開始頂点位置, 開始インスタンス位置)
 
 
 		// 描画終了
