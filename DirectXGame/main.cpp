@@ -125,9 +125,10 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 
 	// 頂点データの準備
 	VertexData vertices[] = {
-		{0.0f,  0.5f,  0.0f, 1.0f}, //  上
-		{0.5f,  -0.5f, 0.0f, 1.0f}, // 右下
-		{-0.5f, -0.5f, 0.0f, 1.0f}, // 左下
+		{-1.0f,  1.0f,  0.0f, 1.0f}, // 左上
+	    {1.0f,  1.0f,  0.0f, 1.0f}, // 右上
+	    {-1.0f, -1.0f,  0.0f, 1.0f}, // 左下	
+		{1.0f,  -1.0f, 0.0f, 1.0f}, // 右下
 	};
 #pragma endregion
 
@@ -149,7 +150,7 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	//頂点インデックスデータの準備
 #pragma region IndexData
 	uint16_t indices[] = {
-	    0, 1, 2 // 頂点0、1、2を結ぶ三角形
+	    0, 1, 2, 2, 1 ,3// 頂点0、1、2を結ぶ三角形
 	};
 #pragma endregion
 
@@ -166,16 +167,6 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		pGpuIndices[i] = indices[i]; // インデックスデータをGPUリソースにコピー
 	}
 #pragma endregion
-
-//	// Resourceにデータを書き込む
-//#pragma region WriteVertexData
-//	    Vector4* vertexData = nullptr;
-//	    vb.Get()->Map(0, nullptr, reinterpret_cast<void**>(&vertexData)); // リソースをCPUから書き込めるようにマップする
-//	    vertexData[0] = {-0.5f, -0.5f, 0.0f, 1.0f};                               // 頂点1の位置
-//	    vertexData[1] = {0.0f, 0.5f, 0.0f, 1.0f};                               // 頂点2の位置
-//		vertexData[2] = {0.5f, -0.5f, 0.0f, 1.0f};                               // 頂点3の位置
-//#pragma endregion
-
 
 	// ゲームシーンのインスタンス生成
 	GameScene* gameScene = new GameScene();
@@ -209,7 +200,6 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		// トポロジの設定
 		commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST); // トポロジの設定（三角形リスト）
 		// 頂点数、インデックス数、インデックスの開放位置、インデックスのオフセット
-		//commandList->DrawInstanced(3, 1, 0, 0); // DrawInstanced(頂点数, インスタンス数, 開始頂点位置, 開始インスタンス位置)
 		commandList->DrawIndexedInstanced(_countof(indices), 1, 0, 0, 0); // DrawIndexedInstanced(インデックス数, インスタンス数, 開始インデックス位置, 開始頂点位置, 開始インスタンス位置)
 
 
