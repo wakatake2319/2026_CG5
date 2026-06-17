@@ -375,6 +375,59 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		gameScene->Update();
 
 
+
+
+		// TransitionBarrierを SRV => RTV に設定する
+#pragma region TransitionBarrierの変換
+		D3D12_RESOURCE_BARRIER barrier{};// TransitionBarrierの設定
+		barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION; // TransitionBarrierであることを示す
+		barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;      // バリアのオプション設定
+		barrier.Transition.pResource = renderTextureResource;  // バリアをかけるリソース
+		barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE; // バリア前のリソースの状態
+		barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET; // バリア後のリソースの状態
+		commandList->ResourceBarrier(1, &barrier);                                   // バリアの発行
+
+		// 描画先のRTVとDSVを設定する
+		commandList->OMSetRenderTargets(1, &rtvHandleCPU, FALSE, &dsvHandleCPU); // 描画先のRTVとDSVを設定する
+
+		// Viewportの設定
+		D3D12_VIEWPORT viewport{};
+		viewport.Width = WinApp::kWindowWidth;
+		viewport.Height = WinApp::kWindowHeight;
+		viewport.TopLeftX = 0;
+		viewport.TopLeftY = 0;
+		viewport.MinDepth = 0.0f;
+		viewport.MaxDepth = 1.0f;
+
+		commandList->RSSetViewports(1, &viewport); // Viewportの設定
+
+		// Scissorの設定
+		D3D12_RECT scissorRect{};
+		// 基本的にビューポートと同じ矩形が構成されるようにする
+		scissorRect.left = 0;
+		scissorRect.right = WinApp::kWindowWidth;
+		scissorRect.top = 0;
+		scissorRect.bottom = WinApp::kWindowHeight;
+
+		commandList->RSSetScissorRects(1, &scissorRect); // Scissorの設定
+
+		// 全画面クリア
+		commandList->ClearRenderTargetView(rtvHandleCPU, kRenderTargetClearColor, 0, nullptr); // RTVのクリア
+		//指定した深度で画面全体をクリアする
+		commandList->ClearDepthStencilView(dsvHandleCPU, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr); // DSVのクリア
+
+		// 描画(次回にコードを書く)
+
+		// TransitionBarrierを元に戻し、PixelShaderが扱えるようにする
+		barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION; // TransitionBarrierの設定
+		barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;      // バリアのオプション設定
+		barrier.Transition.pResource = renderTextureResource;  // バリアをかけるリソース
+		barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET; // バリア前のリソースの状態
+		barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE; // バリア後のリソースの状態
+		commandList->ResourceBarrier(1, &barrier);                                  // バリアの発行
+
+#pragma endregion
+
 		// 描画開始
 		dxCommon->PreDraw();
 
@@ -388,9 +441,15 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		commandList->IASetIndexBuffer(ib.GetView()); // インデックスバッファビューの設定
 		// トポロジの設定
 		commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST); // トポロジの設定（三角形リスト）
+		
+		// 使用するDescriptorHeapの設定
+		commandList->SetDescriptorHeaps(srvDescriptorHeap->GetDesc().NumDescriptors, &srvDescriptorHeap);
+
+		// SRVのDescripterTableの先頭を設定
+		commandList->SetGraphicsRootDescriptorTable(0, srvHandleGPU); 
+		
 		// 頂点数、インデックス数、インデックスの開放位置、インデックスのオフセット
 		commandList->DrawIndexedInstanced(_countof(indices), 1, 0, 0, 0); // DrawIndexedInstanced(インデックス数, インスタンス数, 開始インデックス位置, 開始頂点位置, 開始インスタンス位置)
-
 
 		// 描画終了
 		dxCommon->PostDraw();
