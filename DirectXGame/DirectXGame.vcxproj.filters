@@ -91,6 +91,7 @@
     <None Include="Resources\shaders\Terrain.hlsli">
       <Filter>シェーダー ファイル</Filter>
     </None>
+    <None Include="Resources\shaders\Test.hlsli" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameScene.h">
