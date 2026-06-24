@@ -191,7 +191,7 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 #pragma region PixelShader
 		// ピクセルシェーダーの読み込みとコンパイル
 	    Shader ps;
-	    ps.LoadDxc(L"Resources/Shaders/TestPS.hlsl", L"ps_6_0");
+	    ps.LoadDxc(L"Resources/Shaders/Vignette.PS.hlsl", L"ps_6_0");
 	    assert(ps.GetDxcBlob() != nullptr);
 #pragma endregion
 
