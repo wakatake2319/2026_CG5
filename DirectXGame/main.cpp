@@ -8,6 +8,7 @@
 #include "VertexBuffer.h"
 #include "IndexBuffer.h"
 #include "WorldTransformEx.h"
+#include "imgui.h"
 
 using namespace KamataEngine;
 
@@ -160,8 +161,13 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	// 初期化処理
 	Initialize(L"LE3D_14_タケウチ_ハルカ_CG5");
 
+	int effectType = 0;
+
 	// DirectXCommonインスタンスの取得
 	DirectXCommon* dxCommon = DirectXCommon::GetInstance();
+	// ImguiManagerのインスタンスを取得
+	ImGuiManager* imguiManager_ = ImGuiManager::GetInstance();
+	//imguiManager_->Initialize();
 
 	// ウィンドウサイズの取得
 	int32_t w = dxCommon->GetBackBufferWidth();
@@ -188,18 +194,44 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 
 
 	// PixelShaderをCompileする
-#pragma region PixelShader
+#pragma region PixelShader	
 		// ピクセルシェーダーの読み込みとコンパイル
-	    Shader ps;
-	    ps.LoadDxc(L"Resources/Shaders/Vignette.PS.hlsl", L"ps_6_0");
-	    assert(ps.GetDxcBlob() != nullptr);
-#pragma endregion
 
+		// NormalShader
+		Shader normalPS;
+	    normalPS.LoadDxc(L"Resources/Shaders/Normal.PS.hlsl", L"ps_6_0");
+	    assert(normalPS.GetDxcBlob() != nullptr);
+
+		// グレースケール
+	    Shader grayps;
+	    grayps.LoadDxc(L"Resources/Shaders/TestPS.hlsl", L"ps_6_0");
+	    assert(grayps.GetDxcBlob() != nullptr);
+
+		// ヴィネッティング
+		Shader vignettePS;
+		vignettePS.LoadDxc(L"Resources/Shaders/Vignette.PS.hlsl",L"ps_6_0");
+	    assert(vignettePS.GetDxcBlob() != nullptr);
+
+		// セピア調
+	    Shader sepiaPS;
+	    sepiaPS.LoadDxc(L"Resources/Shaders/SepiaTone.PS.hlsl", L"ps_6_0");
+	    assert(sepiaPS.GetDxcBlob() != nullptr);
+#pragma endregion
 
 	// PipelineStateの作成
 #pragma region PSO
-	    PipelineState pipelineState;
-	    SetupPipelineState(pipelineState, rs, vs, ps);
+	    //PipelineState pipelineState;
+	    //SetupPipelineState(pipelineState, rs, vs, ps);
+		
+		PipelineState normalPSO;
+		PipelineState grayPSO;
+	    PipelineState vignettePSO;
+	    PipelineState sepiaPSO;
+
+		SetupPipelineState(normalPSO, rs, vs, normalPS);
+	    SetupPipelineState(grayPSO, rs, vs, grayps);
+	    SetupPipelineState(vignettePSO, rs, vs, vignettePS);
+	    SetupPipelineState(sepiaPSO, rs, vs, sepiaPS);
 #pragma endregion
 
 
@@ -388,6 +420,7 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 			break;
 		}
 
+
 		// world変換行列の定数バッファへの転送
 		worldTransform.rotation_.y += 0.005f; // Y軸回りに回転させる
 		worldTransform.UpdateMatrix();        // ワールド変換行列の更新
@@ -395,12 +428,22 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		// cameraの更新と定数バッファへの転送
 		camera.UpdateMatrix(); // カメラのビュー行列の更新
 
+		
 
 		// ゲームシーンの更新
 		gameScene->Update();
 
+		imguiManager_->Begin();
 
+		ImGui::Begin("PostEffect");
 
+		const char* items[] = {"Normal", "GrayScale", "Vignette", "Sepia"};
+
+		ImGui::Combo("Effect", &effectType, items, IM_ARRAYSIZE(items));
+
+		ImGui::End();
+
+		imguiManager_->End();
 
 		// TransitionBarrierを SRV => RTV に設定する
 #pragma region TransitionBarrierの変換
@@ -456,15 +499,36 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 
 #pragma endregion
 
+
+		imguiManager_->Draw();
+
 		// 描画開始
 		dxCommon->PreDraw();
+
 
 		// ゲームシーンの描画
 		gameScene->Draw();
 
+
 		// コマンドを読む
 		commandList->SetGraphicsRootSignature(rs.Get()); // ルートシグネチャの設定
-		commandList->SetPipelineState(pipelineState.Get());         // PSOの設定
+		switch (effectType) {
+		case 0:
+			commandList->SetPipelineState(normalPSO.Get());
+			break;
+
+		case 1:
+			commandList->SetPipelineState(grayPSO.Get());
+			break;
+
+		case 2:
+			commandList->SetPipelineState(vignettePSO.Get());
+			break;
+
+		case 3:
+			commandList->SetPipelineState(sepiaPSO.Get());
+			break;
+		} // PSOの設定
 		commandList->IASetVertexBuffers(0, 1, vb.GetView()); // 頂点バッファビューの設定
 		commandList->IASetIndexBuffer(ib.GetView()); // インデックスバッファビューの設定
 		// トポロジの設定
@@ -481,6 +545,8 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 
 		// 描画終了
 		dxCommon->PostDraw();
+
+		//imguiManager_->Finalize();
 	}
 
 

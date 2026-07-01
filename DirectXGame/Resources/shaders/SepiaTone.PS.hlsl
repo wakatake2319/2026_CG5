@@ -1,7 +1,7 @@
 #include "Test.hlsli"
 
-Texture2D<float32_t4> gTexture : register(t0);  // SRV      register => t
-SamplerState gSampler : register(s0);           // Sampler  register => s
+Texture2D<float32_t4> gTexture : register(t0); // SRV      register => t
+SamplerState gSampler : register(s0); // Sampler  register => s
 
 struct PixelShaderOutput
 {
@@ -17,8 +17,8 @@ PixelShaderOutput main(VertexShaderOutput input)
     
     
     float32_t value = dot(textureColor.rgb, float32_t3(0.2125f, 0.7154f, 0.0721f));
-    // グレースケール
-    output.color = float32_t4(value, value, value, textureColor.a);
+    // セピア調
+    output.color = value * float32_t4(1.0f, 74.0f / 107.0f, 43.0f / 107.0f, textureColor.a);
     
     return output;
 }
