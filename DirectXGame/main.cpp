@@ -221,6 +221,11 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	    Shader boxFilterPS;
 	    boxFilterPS.LoadDxc(L"Resources/Shaders/BoxFilter.PS.hlsl", L"ps_6_0");
 	    assert(boxFilterPS.GetDxcBlob() != nullptr);
+
+		// GaussianFilter
+	    Shader gaussianFilterPS;
+	    gaussianFilterPS.LoadDxc(L"Resources/Shaders/GaussianFilter.PS.hlsl", L"ps_6_0");
+	    assert(gaussianFilterPS.GetDxcBlob() != nullptr);
 #pragma endregion
 
 	// PipelineStateの作成
@@ -233,12 +238,13 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	    PipelineState vignettePSO;
 	    PipelineState sepiaPSO;
 	    PipelineState boxFilterPSO;
-
+	    PipelineState gaussianFilterPSO;
 		SetupPipelineState(normalPSO, rs, vs, normalPS);
 	    SetupPipelineState(grayPSO, rs, vs, grayps);
 	    SetupPipelineState(vignettePSO, rs, vs, vignettePS);
 	    SetupPipelineState(sepiaPSO, rs, vs, sepiaPS);
 	    SetupPipelineState(boxFilterPSO, rs, vs, boxFilterPS);
+	    SetupPipelineState(gaussianFilterPSO, rs, vs, gaussianFilterPS);
 #pragma endregion
 
 
@@ -444,7 +450,7 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 
 		ImGui::Begin("PostEffect");
 
-		const char* items[] = {"Normal", "GrayScale", "Vignette", "Sepia", "BoxFilter"};
+		const char* items[] = {"Normal", "GrayScale", "Vignette", "Sepia", "BoxFilter", "GaussianFilter"};
 
 		ImGui::Combo("Effect", &effectType, items, IM_ARRAYSIZE(items));
 
@@ -538,6 +544,10 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 
 		case 4:
 			commandList->SetPipelineState(boxFilterPSO.Get());
+			break;
+
+		case 5:
+			commandList->SetPipelineState(gaussianFilterPSO.Get());
 			break;
 		} // PSOの設定
 		commandList->IASetVertexBuffers(0, 1, vb.GetView()); // 頂点バッファビューの設定
