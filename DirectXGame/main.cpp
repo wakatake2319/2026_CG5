@@ -226,6 +226,11 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	    Shader gaussianFilterPS;
 	    gaussianFilterPS.LoadDxc(L"Resources/Shaders/GaussianFilter.PS.hlsl", L"ps_6_0");
 	    assert(gaussianFilterPS.GetDxcBlob() != nullptr);
+
+		// RadialBlur
+	    Shader radialBlurPS;
+	    radialBlurPS.LoadDxc(L"Resources/Shaders/RadialBlur.PS.hlsl", L"ps_6_0");
+	    assert(radialBlurPS.GetDxcBlob() != nullptr);
 #pragma endregion
 
 	// PipelineStateの作成
@@ -239,12 +244,15 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	    PipelineState sepiaPSO;
 	    PipelineState boxFilterPSO;
 	    PipelineState gaussianFilterPSO;
+	    PipelineState radialBlurPSO;
+
 		SetupPipelineState(normalPSO, rs, vs, normalPS);
 	    SetupPipelineState(grayPSO, rs, vs, grayps);
 	    SetupPipelineState(vignettePSO, rs, vs, vignettePS);
 	    SetupPipelineState(sepiaPSO, rs, vs, sepiaPS);
 	    SetupPipelineState(boxFilterPSO, rs, vs, boxFilterPS);
 	    SetupPipelineState(gaussianFilterPSO, rs, vs, gaussianFilterPS);
+		SetupPipelineState(radialBlurPSO, rs, vs, radialBlurPS);
 #pragma endregion
 
 
@@ -450,7 +458,16 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 
 		ImGui::Begin("PostEffect");
 
-		const char* items[] = {"Normal", "GrayScale", "Vignette", "Sepia", "BoxFilter", "GaussianFilter"};
+		const char* items[] =
+		{
+			"Normal",
+			"GrayScale",
+			"Vignette",
+			"Sepia",
+			"BoxFilter",
+			"GaussianFilter", 
+			"RadialBlur"
+		};
 
 		ImGui::Combo("Effect", &effectType, items, IM_ARRAYSIZE(items));
 
@@ -512,16 +529,13 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 
 #pragma endregion
 
-
 		imguiManager_->Draw();
 
 		// 描画開始
 		dxCommon->PreDraw();
 
-
 		// ゲームシーンの描画
 		gameScene->Draw();
-
 
 		// コマンドを読む
 		commandList->SetGraphicsRootSignature(rs.Get()); // ルートシグネチャの設定
@@ -549,7 +563,13 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		case 5:
 			commandList->SetPipelineState(gaussianFilterPSO.Get());
 			break;
-		} // PSOの設定
+
+		case 6:
+			commandList->SetPipelineState(radialBlurPSO.Get());
+			break;
+		} 
+		
+		// PSOの設定
 		commandList->IASetVertexBuffers(0, 1, vb.GetView()); // 頂点バッファビューの設定
 		commandList->IASetIndexBuffer(ib.GetView()); // インデックスバッファビューの設定
 		// トポロジの設定

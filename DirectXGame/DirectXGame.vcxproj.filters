@@ -81,6 +81,8 @@
     <FxCompile Include="Resources\shaders\Vignette.PS.hlsl" />
     <FxCompile Include="Resources\shaders\SepiaTone.PS.hlsl" />
     <FxCompile Include="Resources\shaders\BoxFilter.PS.hlsl" />
+    <FxCompile Include="Resources\shaders\GaussianFilter.PS.hlsl" />
+    <FxCompile Include="Resources\shaders\RadialBlur.PS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\shaders\Sprite.hlsli">
