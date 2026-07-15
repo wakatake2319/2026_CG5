@@ -231,6 +231,11 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	    Shader radialBlurPS;
 	    radialBlurPS.LoadDxc(L"Resources/Shaders/RadialBlur.PS.hlsl", L"ps_6_0");
 	    assert(radialBlurPS.GetDxcBlob() != nullptr);
+
+		// Outline
+	    Shader outlinePS;
+	    outlinePS.LoadDxc(L"Resources/Shaders/OutLine.PS.hlsl", L"ps_6_0");
+	    assert(outlinePS.GetDxcBlob() != nullptr);
 #pragma endregion
 
 	// PipelineStateの作成
@@ -245,7 +250,7 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	    PipelineState boxFilterPSO;
 	    PipelineState gaussianFilterPSO;
 	    PipelineState radialBlurPSO;
-
+	    PipelineState outlinePSO;
 		SetupPipelineState(normalPSO, rs, vs, normalPS);
 	    SetupPipelineState(grayPSO, rs, vs, grayps);
 	    SetupPipelineState(vignettePSO, rs, vs, vignettePS);
@@ -253,6 +258,7 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	    SetupPipelineState(boxFilterPSO, rs, vs, boxFilterPS);
 	    SetupPipelineState(gaussianFilterPSO, rs, vs, gaussianFilterPS);
 		SetupPipelineState(radialBlurPSO, rs, vs, radialBlurPS);
+	    SetupPipelineState(outlinePSO, rs, vs, outlinePS);
 #pragma endregion
 
 
@@ -466,7 +472,8 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 			"Sepia",
 			"BoxFilter",
 			"GaussianFilter", 
-			"RadialBlur"
+			"RadialBlur",
+		    "Outline"
 		};
 
 		ImGui::Combo("Effect", &effectType, items, IM_ARRAYSIZE(items));
@@ -567,6 +574,10 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		case 6:
 			commandList->SetPipelineState(radialBlurPSO.Get());
 			break;
+		case 7:
+			commandList->SetPipelineState(outlinePSO.Get());
+			break;
+
 		} 
 		
 		// PSOの設定
