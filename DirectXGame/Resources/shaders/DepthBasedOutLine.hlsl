@@ -2,6 +2,8 @@
 
 Texture2D<float32_t4> gTexture : register(t0); // SRV      register => t
 SamplerState gSampler : register(s0); // Sampler  register => s
+Texture2D<float32_t> gDepthTexture : register(t1); // SRV      register => t
+SamplerState gSamplerPoint : register(s1); // Sampler  register => s
 
 struct PixelShaderOutput
 {
@@ -50,18 +52,21 @@ PixelShaderOutput main(VertexShaderOutput input)
         for (int32_t y = 0; y < 3; ++y)
         {
             float32_t2 texcoord = input.texcoord + kIndex3x3[x][y] * uvStepSize;
-            float32_t3 fetchColor = gTexture.Sample(gSampler, texcoord).rgb;
-            float32_t luminance = Luminance(fetchColor);
-            difference.x += luminance * kPrewittHorizontalKernel[x][y];
-            difference.y += luminance * kPrewittVerticalKernel[x][y];
 
+            float32_t ndcDepth = gDepthTexture.Sample(gSamplerPoint, texcoord);
+            float32_t4 viewSpace = mul(float32_t4(0.0f, 0.0f, ndcDepth, 1.0f), gMaterial.projectionInverse);
+            float32_t viewZ = viewSpace.z * rcp(viewSpace.w);
+            difference.x += viewZ * kPrewittHorizontalKernel[x][y];
+            difference.y += viewZ * kPrewittVerticalKernel[x][y];
+
+            
         }
     }
     // 変化の長さをウェイトとして合成
     float32_t weight = length(difference);
     
     // 差が小さくわかりづらいので、適当に掛ける
-    weight = saturate(weight * 6.0f);
+    weight = saturate(weight);
     
     PixelShaderOutput output;
     

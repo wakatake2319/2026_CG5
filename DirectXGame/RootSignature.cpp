@@ -55,7 +55,7 @@ void RootSignature::Create() {
 
 	ID3DBlob* signatureBlob = nullptr; // シグネチャのバイナリデータ
 	ID3DBlob* errorBlog = nullptr;     // エラーのバイナリデ
-	HRESULT hr = D3D12SerializeRootSignature(&descriptionRootSignature, D3D_ROOT_SIGNATURE_VERSION_1, &signatureBlob, &errorBlog);
+	[[maybe_unused]] HRESULT hr = D3D12SerializeRootSignature(&descriptionRootSignature, D3D_ROOT_SIGNATURE_VERSION_1, &signatureBlob, &errorBlog);
 	if (FAILED(hr)) {
 		DebugText::GetInstance()->ConsolePrintf(reinterpret_cast<char*>(errorBlog->GetBufferPointer()));
 		// 失敗

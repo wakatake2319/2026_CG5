@@ -101,7 +101,7 @@ ID3D12Resource* CreateRenderTextureResource(
 
 	// 4.RenderTextureResourceの生成
 	ID3D12Resource* resource = nullptr;
-	HRESULT hr = device->CreateCommittedResource(
+	[[maybe_unused]] HRESULT hr = device->CreateCommittedResource(
 		&heapProperties,
 		D3D12_HEAP_FLAG_NONE,
 		&resourceDesc,
@@ -142,7 +142,7 @@ ID3D12Resource* CreateDepthStencilTextureResource(
 
 	// 3.Resourceの生成
 	ID3D12Resource* resource = nullptr;
-	HRESULT hr = device->CreateCommittedResource(
+	[[maybe_unused]] HRESULT hr = device->CreateCommittedResource(
 	    &heapProperties,					// ヒープの設定
 		D3D12_HEAP_FLAG_NONE,				// ヒープの特殊な設定
 		&resourceDesc,						// Resourceの設定
@@ -318,7 +318,7 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	// RenderTextureResourceの作成
 #pragma region RenderTextureResource
 	ID3D12Device* device = dxCommon->GetDevice();
-	HRESULT hr;
+	[[maybe_unused]] HRESULT hr;
 
 	// 0.RenderTextureResourceの生成
 	// 画面クリア色 わかりやすく赤にする
@@ -416,6 +416,28 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	);
 #pragma endregion
 
+	// Depth用のSRVの生成
+#pragma region DepthSRV
+
+
+
+	//D3D12_SHADER_RESOURCE_VIEW_DESC depthTextureSRVDesc{};
+	//// DXGI_FORMAT_D24_UNORM_S8_UINTのDepthを読むときはDXGI_FORMAT_R24_UNORM_X8_TYPELESSに変換する
+	//depthTextureSRVDesc.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS; // Depthを読むときのフォーマット
+	//depthTextureSRVDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING; // RGBA値をそのままシェーダーに対応させる
+	//depthTextureSRVDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;                      // 2Dテクスチャとして利用する
+	//depthTextureSRVDesc.Texture2D.MipLevels = 1;                                            // mipmapは1しかない
+	//device->CreateShaderResourceView(
+	//    depthStencilResource, // viewと関連付けたいリソース
+	//    &depthTextureSRVDesc, // SRVの詳細設定(Desc:Description、構成内容の記述)
+	//	// 新しいdescriptorHandle
+	//
+	//    srvHandleCPU // SRV用ディスクリプタヒープのCPU側のハンドル
+	//);
+
+#pragma endregion
+
+
 	// モデル関係
 #pragma region モデル関係
 	// アプリで使用する3Dモデル
@@ -489,7 +511,7 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;      // バリアのオプション設定
 		barrier.Transition.pResource = renderTextureResource;  // バリアをかけるリソース
 		barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE; // バリア前のリソースの状態
-		barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET; // バリア後のリソースの状態
+		barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;          // バリア後のリソースの状態
 		commandList->ResourceBarrier(1, &barrier);                                   // バリアの発行
 
 		// 描画先のRTVとDSVを設定する
@@ -530,7 +552,7 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION; // TransitionBarrierの設定
 		barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;      // バリアのオプション設定
 		barrier.Transition.pResource = renderTextureResource;  // バリアをかけるリソース
-		barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET; // バリア前のリソースの状態
+		barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;        // バリア前のリソースの状態
 		barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE; // バリア後のリソースの状態
 		commandList->ResourceBarrier(1, &barrier);                                  // バリアの発行
 
