@@ -84,7 +84,7 @@
     <FxCompile Include="Resources\shaders\GaussianFilter.PS.hlsl" />
     <FxCompile Include="Resources\shaders\RadialBlur.PS.hlsl" />
     <FxCompile Include="Resources\shaders\OutLine.PS.hlsl" />
-    <FxCompile Include="Resources\shaders\DepthBasedOutLine.hlsl" />
+    <FxCompile Include="Resources\shaders\DepthBasedOutLine.PS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\shaders\Sprite.hlsli">

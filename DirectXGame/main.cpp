@@ -236,6 +236,12 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	    Shader outlinePS;
 	    outlinePS.LoadDxc(L"Resources/Shaders/OutLine.PS.hlsl", L"ps_6_0");
 	    assert(outlinePS.GetDxcBlob() != nullptr);
+
+		// DepthBaseOutline
+	    //Shader DepthOutlinePS;
+	    //DepthOutlinePS.LoadDxc(L"Resources/Shaders/DepthBasedOutLine.PS.hlsl", L"ps_6_0");
+	    //assert(DepthOutlinePS.GetDxcBlob() != nullptr);
+
 #pragma endregion
 
 	// PipelineStateの作成
@@ -251,6 +257,8 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	    PipelineState gaussianFilterPSO;
 	    PipelineState radialBlurPSO;
 	    PipelineState outlinePSO;
+	    //PipelineState DepthOutlinePSO;
+
 		SetupPipelineState(normalPSO, rs, vs, normalPS);
 	    SetupPipelineState(grayPSO, rs, vs, grayps);
 	    SetupPipelineState(vignettePSO, rs, vs, vignettePS);
@@ -259,6 +267,7 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	    SetupPipelineState(gaussianFilterPSO, rs, vs, gaussianFilterPS);
 		SetupPipelineState(radialBlurPSO, rs, vs, radialBlurPS);
 	    SetupPipelineState(outlinePSO, rs, vs, outlinePS);
+	    //SetupPipelineState(DepthOutlinePSO, rs, vs, DepthOutlinePS);
 #pragma endregion
 
 
@@ -495,7 +504,8 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 			"BoxFilter",
 			"GaussianFilter", 
 			"RadialBlur",
-		    "Outline"
+		    "Outline", 
+			//"DepthOutline",
 		};
 
 		ImGui::Combo("Effect", &effectType, items, IM_ARRAYSIZE(items));
@@ -599,7 +609,9 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		case 7:
 			commandList->SetPipelineState(outlinePSO.Get());
 			break;
-
+		//case 8:
+			//commandList->SetPipelineState(DepthOutlinePSO.Get());
+			//break;
 		} 
 		
 		// PSOの設定
