@@ -242,6 +242,11 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	    //DepthOutlinePS.LoadDxc(L"Resources/Shaders/DepthBasedOutLine.PS.hlsl", L"ps_6_0");
 	    //assert(DepthOutlinePS.GetDxcBlob() != nullptr);
 
+		// random
+	    Shader randomPS;
+	    randomPS.LoadDxc(L"Resources/Shaders/Random.PS.hlsl", L"ps_6_0");
+	    assert(randomPS.GetDxcBlob() != nullptr);
+
 #pragma endregion
 
 	// PipelineStateの作成
@@ -258,6 +263,7 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	    PipelineState radialBlurPSO;
 	    PipelineState outlinePSO;
 	    //PipelineState DepthOutlinePSO;
+	    PipelineState randomPSO;
 
 		SetupPipelineState(normalPSO, rs, vs, normalPS);
 	    SetupPipelineState(grayPSO, rs, vs, grayps);
@@ -268,6 +274,8 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		SetupPipelineState(radialBlurPSO, rs, vs, radialBlurPS);
 	    SetupPipelineState(outlinePSO, rs, vs, outlinePS);
 	    //SetupPipelineState(DepthOutlinePSO, rs, vs, DepthOutlinePS);
+	    SetupPipelineState(randomPSO, rs, vs, randomPS);
+
 #pragma endregion
 
 
@@ -287,7 +295,6 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		{{1.0f,  -1.0f, 0.0f, 1.0f}, {1.0f, 1.0f}}, // 右下
 	};
 #pragma endregion
-
 
 	// VertexBuffer(VertexResource, VertexBufferView)の作成
 #pragma region VertexBuffer
@@ -469,7 +476,6 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	// ゲームシーンの初期化
 	gameScene->Initialize();
 
-
 	// メインループ
 	while (true) {
 	// エンジンの処理
@@ -506,6 +512,7 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 			"RadialBlur",
 		    "Outline", 
 			//"DepthOutline",
+		    "random",
 		};
 
 		ImGui::Combo("Effect", &effectType, items, IM_ARRAYSIZE(items));
@@ -612,6 +619,9 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		//case 8:
 			//commandList->SetPipelineState(DepthOutlinePSO.Get());
 			//break;
+		case 8:
+			commandList->SetPipelineState(randomPSO.Get());
+			break;
 		} 
 		
 		// PSOの設定
@@ -625,7 +635,7 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 
 		// SRVのDescripterTableの先頭を設定
 		commandList->SetGraphicsRootDescriptorTable(0, srvHandleGPU); 
-		
+
 		// 頂点数、インデックス数、インデックスの開放位置、インデックスのオフセット
 		commandList->DrawIndexedInstanced(_countof(indices), 1, 0, 0, 0); // DrawIndexedInstanced(インデックス数, インスタンス数, 開始インデックス位置, 開始頂点位置, 開始インスタンス位置)
 

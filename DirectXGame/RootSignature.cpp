@@ -30,12 +30,17 @@ void RootSignature::Create() {
 
 	// ルートパラメータの用意 ※ピクセルシェーダーに読み込ませるために必要
 	// 複数設定できるので配列の構造をしている。今回は1つだけなので、長さ1の配列にする
-	D3D12_ROOT_PARAMETER rootParameters[1]{};
+	D3D12_ROOT_PARAMETER rootParameters[2]{};
 
 	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE; // デスクリプタテーブル
 	rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;           // ピクセルシェーダーで見えるようにする
 	rootParameters[0].DescriptorTable.pDescriptorRanges = srvDescRange;           // 拡張しやすくする
 	rootParameters[0].DescriptorTable.NumDescriptorRanges = _countof(srvDescRange); // レンジテーブル数
+
+	rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+	rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+	rootParameters[1].Descriptor.ShaderRegister = 0; // b0
+	rootParameters[1].Descriptor.RegisterSpace = 0;
 
 	descriptionRootSignature.pParameters = rootParameters; // ルートパラメータの配列
 	descriptionRootSignature.NumParameters = _countof(rootParameters); // ルートパラメータの数
