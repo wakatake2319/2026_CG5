@@ -85,6 +85,7 @@
     <FxCompile Include="Resources\shaders\RadialBlur.PS.hlsl" />
     <FxCompile Include="Resources\shaders\OutLine.PS.hlsl" />
     <FxCompile Include="Resources\shaders\DepthBasedOutLine.PS.hlsl" />
+    <FxCompile Include="Resources\shaders\Dissolve.PS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\shaders\Sprite.hlsli">

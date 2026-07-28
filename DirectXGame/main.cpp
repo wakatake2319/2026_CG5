@@ -242,6 +242,13 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	    //DepthOutlinePS.LoadDxc(L"Resources/Shaders/DepthBasedOutLine.PS.hlsl", L"ps_6_0");
 	    //assert(DepthOutlinePS.GetDxcBlob() != nullptr);
 
+		// Dissolve
+	    Shader DissolvePS;
+	    DissolvePS.LoadDxc(L"Resources/Shaders/Dissolve.PS.hlsl", L"ps_6_0");
+	    assert(DissolvePS.GetDxcBlob() != nullptr);
+
+		uint32_t MaskHandle = TextureManager::Load("noise0.png");
+
 #pragma endregion
 
 	// PipelineStateの作成
@@ -258,6 +265,7 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	    PipelineState radialBlurPSO;
 	    PipelineState outlinePSO;
 	    //PipelineState DepthOutlinePSO;
+	    PipelineState DissolvePSO;
 
 		SetupPipelineState(normalPSO, rs, vs, normalPS);
 	    SetupPipelineState(grayPSO, rs, vs, grayps);
@@ -268,6 +276,9 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		SetupPipelineState(radialBlurPSO, rs, vs, radialBlurPS);
 	    SetupPipelineState(outlinePSO, rs, vs, outlinePS);
 	    //SetupPipelineState(DepthOutlinePSO, rs, vs, DepthOutlinePS);
+	    SetupPipelineState(DissolvePSO, rs, vs, DissolvePS);
+
+
 #pragma endregion
 
 
@@ -506,6 +517,7 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 			"RadialBlur",
 		    "Outline", 
 			//"DepthOutline",
+		    "Dissolve",
 		};
 
 		ImGui::Combo("Effect", &effectType, items, IM_ARRAYSIZE(items));
@@ -612,6 +624,12 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		//case 8:
 			//commandList->SetPipelineState(DepthOutlinePSO.Get());
 			//break;
+		case 8:
+			commandList->SetPipelineState(DissolvePSO.Get());
+			// MaskHandle
+			
+			break;
+
 		} 
 		
 		// PSOの設定
