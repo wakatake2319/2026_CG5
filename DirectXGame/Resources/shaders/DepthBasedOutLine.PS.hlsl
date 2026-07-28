@@ -5,6 +5,7 @@ SamplerState gSampler : register(s0); // Sampler  register => s
 Texture2D<float32_t> gDepthTexture : register(t1); // SRV      register => t
 SamplerState gSamplerPoint : register(s1); // Sampler  register => s
 
+
 struct PixelShaderOutput
 {
     float32_t4 color : SV_TARGET0;

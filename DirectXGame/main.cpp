@@ -125,7 +125,7 @@ ID3D12Resource* CreateDepthStencilTextureResource(
 	resourceDesc.Height = height;									// Textureの高さ
 	resourceDesc.MipLevels = 1;                                     // mipmapの数 DepthStencilなので1で十分
 	resourceDesc.DepthOrArraySize = 1;                              // Textureの配列数 DepthStencilなので1で十分
-	resourceDesc.Format = DXGI_FORMAT_D32_FLOAT;                    // DepthStencilとして利用可能なフォーマット
+	resourceDesc.Format = DXGI_FORMAT_R32_FLOAT;                    // DepthStencilとして利用可能なフォーマット
 
 	resourceDesc.SampleDesc.Count = 1;								// サンプリングカット 1固定
 	resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;	// 2次元
@@ -238,9 +238,9 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	    assert(outlinePS.GetDxcBlob() != nullptr);
 
 		// DepthBaseOutline
-	    //Shader DepthOutlinePS;
-	    //DepthOutlinePS.LoadDxc(L"Resources/Shaders/DepthBasedOutLine.PS.hlsl", L"ps_6_0");
-	    //assert(DepthOutlinePS.GetDxcBlob() != nullptr);
+	    Shader DepthOutlinePS;
+	    DepthOutlinePS.LoadDxc(L"Resources/Shaders/DepthBasedOutLine.PS.hlsl", L"ps_6_0");
+	    assert(DepthOutlinePS.GetDxcBlob() != nullptr);
 
 #pragma endregion
 
@@ -257,7 +257,7 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	    PipelineState gaussianFilterPSO;
 	    PipelineState radialBlurPSO;
 	    PipelineState outlinePSO;
-	    //PipelineState DepthOutlinePSO;
+	    PipelineState DepthOutlinePSO;
 
 		SetupPipelineState(normalPSO, rs, vs, normalPS);
 	    SetupPipelineState(grayPSO, rs, vs, grayps);
@@ -267,7 +267,7 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	    SetupPipelineState(gaussianFilterPSO, rs, vs, gaussianFilterPS);
 		SetupPipelineState(radialBlurPSO, rs, vs, radialBlurPS);
 	    SetupPipelineState(outlinePSO, rs, vs, outlinePS);
-	    //SetupPipelineState(DepthOutlinePSO, rs, vs, DepthOutlinePS);
+	    SetupPipelineState(DepthOutlinePSO, rs, vs, DepthOutlinePS);
 #pragma endregion
 
 
@@ -430,19 +430,19 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 
 
 
-	//D3D12_SHADER_RESOURCE_VIEW_DESC depthTextureSRVDesc{};
-	//// DXGI_FORMAT_D24_UNORM_S8_UINTのDepthを読むときはDXGI_FORMAT_R24_UNORM_X8_TYPELESSに変換する
-	//depthTextureSRVDesc.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS; // Depthを読むときのフォーマット
-	//depthTextureSRVDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING; // RGBA値をそのままシェーダーに対応させる
-	//depthTextureSRVDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;                      // 2Dテクスチャとして利用する
-	//depthTextureSRVDesc.Texture2D.MipLevels = 1;                                            // mipmapは1しかない
-	//device->CreateShaderResourceView(
-	//    depthStencilResource, // viewと関連付けたいリソース
-	//    &depthTextureSRVDesc, // SRVの詳細設定(Desc:Description、構成内容の記述)
-	//	// 新しいdescriptorHandle
-	//
-	//    srvHandleCPU // SRV用ディスクリプタヒープのCPU側のハンドル
-	//);
+	D3D12_SHADER_RESOURCE_VIEW_DESC depthTextureSRVDesc{};
+	// DXGI_FORMAT_D24_UNORM_S8_UINTのDepthを読むときはDXGI_FORMAT_R24_UNORM_X8_TYPELESSに変換する
+	depthTextureSRVDesc.Format = DXGI_FORMAT_R32_FLOAT;                                     // Depthを読むときのフォーマット
+	depthTextureSRVDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING; // RGBA値をそのままシェーダーに対応させる
+	depthTextureSRVDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;                      // 2Dテクスチャとして利用する
+	depthTextureSRVDesc.Texture2D.MipLevels = 1;                                            // mipmapは1しかない
+	device->CreateShaderResourceView(
+	    depthStencilResource, // viewと関連付けたいリソース
+	    &depthTextureSRVDesc, // SRVの詳細設定(Desc:Description、構成内容の記述)
+		// 新しいdescriptorHandle
+	
+	    srvHandleCPU // SRV用ディスクリプタヒープのCPU側のハンドル
+	);
 
 #pragma endregion
 
@@ -505,7 +505,7 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 			"GaussianFilter", 
 			"RadialBlur",
 		    "Outline", 
-			//"DepthOutline",
+			"DepthOutline",
 		};
 
 		ImGui::Combo("Effect", &effectType, items, IM_ARRAYSIZE(items));
@@ -520,8 +520,8 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION; // TransitionBarrierであることを示す
 		barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;      // バリアのオプション設定
 		barrier.Transition.pResource = renderTextureResource;  // バリアをかけるリソース
-		barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE; // バリア前のリソースの状態
-		barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;          // バリア後のリソースの状態
+		barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_DEPTH_WRITE; // バリア前のリソースの状態
+		barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;          // バリア後のリソースの状態
 		commandList->ResourceBarrier(1, &barrier);                                   // バリアの発行
 
 		// 描画先のRTVとDSVを設定する
@@ -562,8 +562,8 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION; // TransitionBarrierの設定
 		barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;      // バリアのオプション設定
 		barrier.Transition.pResource = renderTextureResource;  // バリアをかけるリソース
-		barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;        // バリア前のリソースの状態
-		barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE; // バリア後のリソースの状態
+		barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE; // バリア前のリソースの状態
+		barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_DEPTH_WRITE;            // バリア後のリソースの状態
 		commandList->ResourceBarrier(1, &barrier);                                  // バリアの発行
 
 #pragma endregion
@@ -609,9 +609,9 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		case 7:
 			commandList->SetPipelineState(outlinePSO.Get());
 			break;
-		//case 8:
-			//commandList->SetPipelineState(DepthOutlinePSO.Get());
-			//break;
+		case 8:
+			commandList->SetPipelineState(DepthOutlinePSO.Get());
+			break;
 		} 
 		
 		// PSOの設定

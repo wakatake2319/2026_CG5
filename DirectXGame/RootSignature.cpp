@@ -41,7 +41,7 @@ void RootSignature::Create() {
 	descriptionRootSignature.NumParameters = _countof(rootParameters); // ルートパラメータの数
 
 	// Samplerの設定
-	D3D12_STATIC_SAMPLER_DESC staticSamplers[1]{};
+	D3D12_STATIC_SAMPLER_DESC staticSamplers[2]{};
 	staticSamplers[0].Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR; // バイリニアフィルタ
 	staticSamplers[0].AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP; // テクスチャの横方向のはみ出し方 0.0～1.0の範囲を繰り返す
 	staticSamplers[0].AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP; // テクスチャの縦方向のはみ出し方 0.0～1.0の範囲を繰り返す
@@ -50,6 +50,15 @@ void RootSignature::Create() {
 	staticSamplers[0].MaxLOD = D3D12_FLOAT32_MAX;                   // たくさんのmipmapを使う
 	staticSamplers[0].ShaderRegister = 0;                           // シェーダー内でのレジスタ番号 0から始まる
 	staticSamplers[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // ピクセルシェーダーで使う
+
+	staticSamplers[1].Filter = D3D12_FILTER_MIN_MAG_MIP_POINT;         // バイリニアフィルタ
+	staticSamplers[1].AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;       // テクスチャの横方向のはみ出し方 0.0～1.0の範囲を繰り返す
+	staticSamplers[1].AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;       // テクスチャの縦方向のはみ出し方 0.0～1.0の範囲を繰り返す
+	staticSamplers[1].AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;       // テクスチャの奥方向のはみ出し方 0.0～1.0の範囲を繰り返す
+	staticSamplers[1].ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;     // 比較関数は使わない
+	staticSamplers[1].MaxLOD = D3D12_FLOAT32_MAX;                       // たくさんのmipmapを使う
+	staticSamplers[1].ShaderRegister = 0;                               // シェーダー内でのレジスタ番号 0から始まる
+	staticSamplers[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // ピクセルシェーダーで使う
 
 	descriptionRootSignature.pStaticSamplers = staticSamplers; // 静的サンプラーの配列
 	descriptionRootSignature.NumStaticSamplers = _countof(staticSamplers); // 静的サンプラーの数
