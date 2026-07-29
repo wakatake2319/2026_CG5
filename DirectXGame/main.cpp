@@ -165,9 +165,12 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 
 	// DirectXCommonインスタンスの取得
 	DirectXCommon* dxCommon = DirectXCommon::GetInstance();
+
+#ifdef DEBUG
 	// ImguiManagerのインスタンスを取得
 	ImGuiManager* imguiManager_ = ImGuiManager::GetInstance();
 	//imguiManager_->Initialize();
+#endif
 
 	// ウィンドウサイズの取得
 	int32_t w = dxCommon->GetBackBufferWidth();
@@ -491,6 +494,9 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		// ゲームシーンの更新
 		gameScene->Update();
 
+#ifdef DEBUG
+
+
 		imguiManager_->Begin();
 
 		ImGui::Begin("PostEffect");
@@ -513,6 +519,28 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		ImGui::End();
 
 		imguiManager_->End();
+#endif // DEBUG
+
+
+		// もしキーを押したらポストエフェクトを変更する
+		Input* input = Input::GetInstance();
+
+		if (input->TriggerKey(DIK_1))
+			effectType = 0;
+		if (input->TriggerKey(DIK_2))
+			effectType = 1;
+		if (input->TriggerKey(DIK_3))
+			effectType = 2;
+		if (input->TriggerKey(DIK_4))
+			effectType = 3;
+		if (input->TriggerKey(DIK_5))
+			effectType = 4;
+		if (input->TriggerKey(DIK_6))
+			effectType = 5;
+		if (input->TriggerKey(DIK_7))
+			effectType = 6;
+		if (input->TriggerKey(DIK_8))
+			effectType = 7;
 
 		// TransitionBarrierを SRV => RTV に設定する
 #pragma region TransitionBarrierの変換
@@ -568,7 +596,10 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 
 #pragma endregion
 
+#ifdef DEBUG
 		imguiManager_->Draw();
+#endif // DEBUG
+
 
 		// 描画開始
 		dxCommon->PreDraw();
